@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 06. 11. 2024 by Benjamin Walkenhorst
 // (c) 2024 Benjamin Walkenhorst
-// Time-stamp: <2024-11-06 19:23:24 krylon>
+// Time-stamp: <2024-11-09 19:46:51 krylon>
 
 // Package level implements the cacheme.Backend interface using LevelDB as its storage backend.
 package level
@@ -10,6 +10,7 @@ package level
 import (
 	"encoding/json"
 	"errors"
+	"sync"
 	"time"
 
 	"github.com/blicero/cacheme"
@@ -23,7 +24,8 @@ var zero time.Time
 // Cache is an implementation of the cacheme.Backend interface, using LevelDB
 // as its backend to provide persistence.
 type Cache struct {
-	db *leveldb.DB
+	lock sync.RWMutex
+	db   *leveldb.DB
 }
 
 // New creates a new LevelCache that stores its data at the given path.
@@ -51,6 +53,9 @@ func (l *Cache) Install(key, val string, ttl time.Duration) error {
 		valBuf, keyBuf []byte
 	)
 
+	l.lock.Lock()
+	defer l.lock.Unlock()
+
 	v.Val = val
 	v.Expires = time.Now().Add(ttl)
 
@@ -76,6 +81,9 @@ func (l *Cache) Lookup(key string) (string, bool, time.Time, error) {
 		val  cacheme.Value
 	)
 
+	l.lock.RLock()
+	defer l.lock.RUnlock()
+
 	if jval, err = l.db.Get([]byte(key), nil); err != nil {
 		if errors.Is(err, leveldb.ErrNotFound) {
 			return "", false, zero, nil
@@ -97,6 +105,9 @@ func (l *Cache) Delete(key string) error {
 		err error
 	)
 
+	l.lock.Lock()
+	defer l.lock.Unlock()
+
 	if err = l.db.Delete([]byte(key), nil); err != nil {
 		return err
 	}
@@ -112,6 +123,9 @@ func (l *Cache) Purge() (e error) {
 		now    time.Time
 		tx     *leveldb.Transaction
 	)
+
+	l.lock.Lock()
+	defer l.lock.Unlock()
 
 	if tx, err = l.db.OpenTransaction(); err != nil {
 		return err
@@ -164,6 +178,9 @@ func (l *Cache) Flush() (e error) {
 		iter   iterator.Iterator
 		status bool
 	)
+
+	l.lock.Lock()
+	defer l.lock.Unlock()
 
 	if tx, err = l.db.OpenTransaction(); err != nil {
 		return err
