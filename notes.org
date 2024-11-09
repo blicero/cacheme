@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2024-11-07 19:47:47 krylon>
+# Time-stamp: <2024-11-09 19:47:52 krylon>
 #
 #+TAGS: internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(b) design(d), meditation(m)
@@ -9,7 +9,7 @@
 #+TODO: MEDITATE(m) PLANNING(p) | SUSPENDED(s)
 #+PRIORITIES: A G D
 
-* Cache Me, Amadeus [0/1]
+* Cache Me, Amadeus [2/2]
   :PROPERTIES:
   :COOKIE_DATA: todo recursive
   :VISIBILITY: children
@@ -18,17 +18,18 @@
   painlessly with concurrent readers and writers.
 ** clocktable
    #+BEGIN: clocktable :scope file :maxlevel 202 :emphasize t
-   #+CAPTION: Clock summary at [2024-11-07 Do 19:47]
-   | Headline                  | Time   |        |      |      |
-   |---------------------------+--------+--------+------+------|
-   | *Total time*              | *6:33* |        |      |      |
-   |---------------------------+--------+--------+------+------|
-   | *Cache Me, Amadeus [0/1]* | *6:33* |        |      |      |
-   | \_  /Components [0/1]/    |        | /6:33/ |      |      |
-   | \_    Testing [0/0]       |        |        | 3:37 |      |
-   | \_    Interface [0/0]     |        |        | 0:55 |      |
-   | \_    Backends [0/0]      |        |        | 2:01 |      |
-   | \_      KV-Store [0/0]    |        |        |      | 2:01 |
+   #+CAPTION: Clock summary at [2024-11-09 Sa 19:47]
+   | Headline                  | Time   |        |      |      |      |
+   |---------------------------+--------+--------+------+------+------|
+   | *Total time*              | *6:36* |        |      |      |      |
+   |---------------------------+--------+--------+------+------+------|
+   | *Cache Me, Amadeus [2/2]* | *6:36* |        |      |      |      |
+   | \_  /Components [2/2]/    |        | /6:36/ |      |      |      |
+   | \_    Testing [0/0]       |        |        | 3:37 |      |      |
+   | \_    Interface [0/0]     |        |        | 0:55 |      |      |
+   | \_    Backends [1/1]      |        |        | 2:04 |      |      |
+   | \_      KV-Store [1/1]    |        |        |      | 2:04 |      |
+   | \_        Synchronization |        |        |      |      | 0:03 |
    #+END:
 ** Journal [0/0]
    :PROPERTIES:
@@ -40,12 +41,13 @@
    :COOKIE_DATA: todo recursive
    :VISIBILITY: children
    :END:
-** Components [0/1]
+** Components [2/2]
    :PROPERTIES:
    :COOKIE_DATA: todo recursive
    :VISIBILITY: children
    :END:
-*** TODO Testing [0/0]
+*** DONE Testing [0/0]
+    CLOSED: [2024-11-09 Sa 19:40]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
     :VISIBILITY: children
@@ -74,7 +76,7 @@
     *Initially, all operations will be blocking* if there multiple actors, I
     may add options for non-blocking access later on. (Meaning that I do
     intend to do that, but I might not get around to it for some time.)
-*** Backends [0/0]
+*** Backends [1/1]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
     :VISIBILITY: children
@@ -90,7 +92,7 @@
      :END:
      This should be relatively simple, I can use sync.Map or a simple map and
      some locking.
-**** KV-Store [0/0]
+**** KV-Store [1/1]
      :PROPERTIES:
      :COOKIE_DATA: todo recursive
      :VISIBILITY: children
@@ -103,6 +105,16 @@
      check out the playing field. But LevelDB appears to be a sensible
      starting point. /Maybe/ SQLite. It appears to be overkill, but it
      wouldn't be terribly hard to pull off.
+***** DONE Synchronization
+      CLOSED: [2024-11-09 Sa 19:47]
+      :LOGBOOK:
+      CLOCK: [2024-11-09 Sa 19:44]--[2024-11-09 Sa 19:47] =>  0:03
+      :END:
+      When I use the LevelDB backend from the application I am working on, I
+      get very frequent messages saying "resource temporarily unavailable" on
+      stderr, that appear to originate within the LevelDB code. I don't like
+      that, on purely aesthetical reasons, so I will try to put some manual
+      locking in front of that, see how that works out.
 ** Bugs [0/0]
    :PROPERTIES:
    :COOKIE_DATA: todo recursive
